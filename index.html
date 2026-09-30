@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loki: The God of Stories - Meme Tug Edition</title>
+    <title>Loki: The God of Stories - Cinematic Edition</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,14 +11,14 @@
 </head>
 <body>
     <div id="game-container">
-        <!-- Main Game Canvas (Side-View Engine) -->
+        <!-- Main Cinematic Canvas -->
         <canvas id="game-canvas"></canvas>
 
         <!-- Top HUD during Game -->
         <header id="hud" class="hidden">
             <div class="hud-bar">
                 <div class="player-badge">
-                    <span class="horns-icon" id="hud-horn-icon">👑</span>
+                    <span id="hud-horn-icon">👑</span>
                     <span id="hud-player-name">LOKI</span>
                 </div>
                 <div class="music-indicator">
@@ -38,47 +38,45 @@
                 </div>
             </div>
 
-            <!-- Tension & Multiverse Resistance Meter -->
+            <!-- Tension Meter -->
             <div class="meter-box">
                 <div class="meter-header">
                     <span>แรงดึงมัลติเวิร์ส (อย่าให้โดนลากตกบันได!)</span>
                     <span id="tension-text">เสถียร</span>
                 </div>
-                <div class="meter-track resistance-track">
+                <div class="meter-track">
                     <div id="tension-bar-fill"></div>
                 </div>
             </div>
         </header>
 
-        <!-- Controls Action Pad for Mobile & Desktop -->
+        <!-- Action Controls -->
         <div id="controls-ui" class="hidden">
             <div id="pull-btn" class="pull-action-button">
-                <span class="pull-btn-glow"></span>
                 <span class="pull-btn-icon">⚡</span>
                 <span class="pull-btn-text">ออกแรงดึง (PULL!)</span>
                 <span class="pull-btn-sub">หรือกด [SPACEBAR] / สไลด์นิ้วไปข้างหน้า</span>
             </div>
         </div>
 
-        <!-- 1. Start & Customization Screen -->
+        <!-- 1. Start & Customization Modal -->
         <section id="screen-custom" class="modal-overlay">
             <div class="modal-card">
                 <h2 class="cinematic-sub">MARVEL STUDIOS MEME PRESENTS</h2>
                 <h1 class="cinematic-title">LOKI<br><span class="gold-text">GOD OF STORIES</span></h1>
                 <p class="cinematic-desc">
                     <i>"I want you to know that I'm never leaving..."</i><br>
-                    แต่งตัวละครโลกิของคุณ แล้วออกไปแบกรับเส้นเวลาของมัลติเวิร์ส!
+                    ใส่ชื่อของคุณ แล้วออกไปแบกรับเส้นเวลาของมัลติเวิร์สขึ้นสู่บัลลังก์ทองคำ!
                 </p>
 
-                <!-- Customization Form -->
                 <div class="custom-panel">
-                    <!-- 1. Name Input -->
+                    <!-- Name Input -->
                     <div class="input-group">
-                        <label for="player-name-input">👤 ชื่อของผู้แบกรับ:</label>
-                        <input type="text" id="player-name-input" maxlength="20" placeholder="พิมพ์ชื่อของคุณ (เช่น โบ๊ท เดอะแบก)" value="โลกิ ผู้แบกรับ">
+                        <label for="player-name-input">👤 ชื่อของผู้แบกรับ (Hero Name):</label>
+                        <input type="text" id="player-name-input" maxlength="25" placeholder="พิมพ์ชื่อของคุณ (เช่น โบ๊ท เดอะแบก)" value="โลกิ ผู้แบกรับ">
                     </div>
 
-                    <!-- 2. Horn Selector -->
+                    <!-- Horn Selection -->
                     <div class="input-group">
                         <label>👑 มงกุฎและเขา:</label>
                         <div class="choice-grid" id="horn-choices">
@@ -89,18 +87,7 @@
                         </div>
                     </div>
 
-                    <!-- 3. Outfit Selector -->
-                    <div class="input-group">
-                        <label>🧥 เสื้อผ้าและเสื้อคลุม:</label>
-                        <div class="choice-grid" id="outfit-choices">
-                            <button type="button" class="choice-btn active" data-outfit="emerald">🌿 ผ้าคลุมมรกตพระเจ้า</button>
-                            <button type="button" class="choice-btn" data-outfit="tva">👔 เสื้อโค้ต TVA Variant</button>
-                            <button type="button" class="choice-btn" data-outfit="armor">🛡️ เกราะทองคำ Asgard</button>
-                            <button type="button" class="choice-btn" data-outfit="suit">💼 ชุดสูทดำ Modern</button>
-                        </div>
-                    </div>
-
-                    <!-- 4. Magic Color Selector -->
+                    <!-- Magic Color Selection -->
                     <div class="input-group">
                         <label>✨ สีพลังเวทมนตร์กาลเวลา:</label>
                         <div class="color-palette" id="color-choices">
@@ -111,7 +98,7 @@
                         </div>
                     </div>
 
-                    <!-- 5. Meme Scenario Selector -->
+                    <!-- Meme Scenario Selector -->
                     <div class="input-group">
                         <label>🎭 สิ่งที่คุณกำลังแบกอยู่:</label>
                         <select id="meme-scenario-select">
@@ -123,29 +110,27 @@
                     </div>
                 </div>
 
-                <!-- Launch Button -->
                 <button id="btn-start-game" class="main-cta-btn">
-                    <span class="cta-glow"></span>
-                    <span class="cta-label">⚡ เข้าสู่บทบาท & เริ่มแบก (เปิดเสียง 🎵)</span>
+                    <span>⚡ เข้าสู่บทบาท & เริ่มแบก (เปิดเสียง 🎵)</span>
                 </button>
             </div>
         </section>
 
-        <!-- 2. Game Over Screen -->
+        <!-- 2. Game Over Modal -->
         <section id="screen-gameover" class="modal-overlay hidden">
             <div class="modal-card fail-card">
                 <h1 class="cinematic-title fail-title">โดนลากตกบันได!</h1>
-                <p class="cinematic-desc" id="fail-desc">
+                <p class="cinematic-desc">
                     น้ำหนักของมัลติเวิร์สมันหนักหนาเกินไป...<br>
                     คุณต้านทานแรงดึงไม่ไหวและถูกสายกาลเวลาดึงกลับสู่วอยด์
                 </p>
                 <button id="btn-retry-game" class="main-cta-btn fail-cta">
-                    <span class="cta-label">🔄 กัดฟันลุกขึ้นมาแบกใหม่!</span>
+                    <span>🔄 กัดฟันลุกขึ้นมาแบกใหม่!</span>
                 </button>
             </div>
         </section>
 
-        <!-- 3. Victory Screen -->
+        <!-- 3. Victory Modal with Photorealistic Yggdrasil Backdrop -->
         <section id="screen-victory" class="modal-overlay hidden">
             <div class="modal-card win-card">
                 <h2 class="cinematic-sub gold-text">FOR YOU. FOR ALL OF US.</h2>
@@ -155,7 +140,7 @@
                     สายกาลเวลาทั้งมวลแตกกิ่งก้านเป็น <b>ต้นไม้อิกดราซิล</b> แผ่ไพศาลไปทั่วทุกมิติ
                 </p>
                 <button id="btn-restart-game" class="main-cta-btn win-cta">
-                    <span class="cta-label">👑 ครองบัลลังก์ต่อไป (เล่นรอบใหม่)</span>
+                    <span>👑 ครองบัลลังก์ต่อไป (เล่นรอบใหม่)</span>
                 </button>
             </div>
         </section>
