@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loki: The God of Stories - Cinematic Edition</title>
+    <title>Loki: The God of Stories - 3D Interactive Edition</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Production Three.js 3D Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <div id="game-container">
-        <!-- Main Cinematic Canvas -->
-        <canvas id="game-canvas"></canvas>
+        <!-- 3D WebGL Canvas Layer -->
+        <div id="webgl-canvas-container"></div>
 
-        <!-- Top HUD during Game -->
+        <!-- In-Game 3D HUD -->
         <header id="hud" class="hidden">
             <div class="hud-bar">
                 <div class="player-badge">
@@ -23,7 +25,7 @@
                 </div>
                 <div class="music-indicator">
                     <span class="note-anim">🎵</span>
-                    <span>Sia - Snowman</span>
+                    <span>Sia - Snowman (3D Audio)</span>
                 </div>
             </div>
 
@@ -38,7 +40,7 @@
                 </div>
             </div>
 
-            <!-- Tension Meter -->
+            <!-- Tension Resistance Meter -->
             <div class="meter-box">
                 <div class="meter-header">
                     <span>แรงดึงมัลติเวิร์ส (อย่าให้โดนลากตกบันได!)</span>
@@ -50,12 +52,12 @@
             </div>
         </header>
 
-        <!-- Action Controls -->
+        <!-- Dynamic Action Controls -->
         <div id="controls-ui" class="hidden">
             <div id="pull-btn" class="pull-action-button">
                 <span class="pull-btn-icon">⚡</span>
                 <span class="pull-btn-text">ออกแรงดึง (PULL!)</span>
-                <span class="pull-btn-sub">หรือกด [SPACEBAR] / สไลด์นิ้วไปข้างหน้า</span>
+                <span class="pull-btn-sub">แตะรัวๆ หรือกด [SPACEBAR] / [ลูกศรขวา]</span>
             </div>
         </div>
 
@@ -63,10 +65,10 @@
         <section id="screen-custom" class="modal-overlay">
             <div class="modal-card">
                 <h2 class="cinematic-sub">MARVEL STUDIOS MEME PRESENTS</h2>
-                <h1 class="cinematic-title">LOKI<br><span class="gold-text">GOD OF STORIES</span></h1>
+                <h1 class="cinematic-title">LOKI<br><span class="gold-text">GOD OF STORIES 3D</span></h1>
                 <p class="cinematic-desc">
                     <i>"I want you to know that I'm never leaving..."</i><br>
-                    ใส่ชื่อของคุณ แล้วออกไปแบกรับเส้นเวลาของมัลติเวิร์สขึ้นสู่บัลลังก์ทองคำ!
+                    ควบคุมโลกิ 3 มิติ ลากเส้นเวลากาลเวลาที่หนักอึ้งขึ้นสู่บัลลังก์ทองคำ Citadel!
                 </p>
 
                 <div class="custom-panel">
@@ -78,12 +80,23 @@
 
                     <!-- Horn Selection -->
                     <div class="input-group">
-                        <label>👑 มงกุฎและเขา:</label>
+                        <label>👑 มงกุฎและเขา 3 มิติ:</label>
                         <div class="choice-grid" id="horn-choices">
                             <button type="button" class="choice-btn active" data-horn="gold">👑 เขาทองคำ (God of Stories)</button>
                             <button type="button" class="choice-btn" data-horn="sylvie">🗡️ เขาหัก Sylvie</button>
                             <button type="button" class="choice-btn" data-horn="frost">❄️ มงกุฎยักษ์น้ำแข็ง</button>
                             <button type="button" class="choice-btn" data-horn="president">🎩 หมวกประธานาธิบดี</button>
+                        </div>
+                    </div>
+
+                    <!-- Outfit Selection -->
+                    <div class="input-group">
+                        <label>🧥 เสื้อคลุม 3D:</label>
+                        <div class="choice-grid" id="outfit-choices">
+                            <button type="button" class="choice-btn active" data-outfit="emerald">🌿 ผ้าคลุมมรกตพระเจ้า</button>
+                            <button type="button" class="choice-btn" data-outfit="tva">👔 เสื้อโค้ต TVA Variant</button>
+                            <button type="button" class="choice-btn" data-outfit="gold">🛡️ เกราะทองคำ Asgard</button>
+                            <button type="button" class="choice-btn" data-outfit="dark">💼 ผ้าคลุมดำมืด Quantum</button>
                         </div>
                     </div>
 
@@ -111,7 +124,7 @@
                 </div>
 
                 <button id="btn-start-game" class="main-cta-btn">
-                    <span>⚡ เข้าสู่บทบาท & เริ่มแบก (เปิดเสียง 🎵)</span>
+                    <span>⚡ เข้าสู่โลก 3D & เริ่มแบก (เปิดเสียง 🎵)</span>
                 </button>
             </div>
         </section>
@@ -130,17 +143,17 @@
             </div>
         </section>
 
-        <!-- 3. Victory Modal with Photorealistic Yggdrasil Backdrop -->
+        <!-- 3. Victory Modal -->
         <section id="screen-victory" class="modal-overlay hidden">
             <div class="modal-card win-card">
                 <h2 class="cinematic-sub gold-text">FOR YOU. FOR ALL OF US.</h2>
                 <h1 class="cinematic-title win-title" id="win-hero-title">GOD OF STORIES</h1>
                 <p class="cinematic-desc" id="win-desc">
                     คุณก้าวขึ้นสู่ขั้นบันไดสุดท้ายและนั่งลงบนบัลลังก์ทองคำสำเร็จ!<br>
-                    สายกาลเวลาทั้งมวลแตกกิ่งก้านเป็น <b>ต้นไม้อิกดราซิล</b> แผ่ไพศาลไปทั่วทุกมิติ
+                    สายกาลเวลาทั้งมวลแตกกิ่งก้านเป็น <b>ต้นไม้อิกดราซิล 3 มิติ</b> แผ่ไพศาลไปทั่วทุกมิติ
                 </p>
                 <button id="btn-restart-game" class="main-cta-btn win-cta">
-                    <span>👑 ครองบัลลังก์ต่อไป (เล่นรอบใหม่)</span>
+                    <span>👑 นั่งครองบัลลังก์ต่อไป (เล่นรอบใหม่)</span>
                 </button>
             </div>
         </section>
@@ -148,8 +161,6 @@
 
     <!-- Scripts -->
     <script src="js/audio.js"></script>
-    <script src="js/physics.js"></script>
-    <script src="js/loki.js"></script>
-    <script src="js/game.js"></script>
+    <script src="js/three_game.js"></script>
 </body>
 </html>

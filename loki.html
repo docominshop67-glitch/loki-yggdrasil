@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loki: The God of Stories - Meme Tug Edition</title>
+    <title>Loki: The God of Stories - 3D Interactive Edition</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         :root {
             --loki-green: #22c55e;
@@ -18,13 +19,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
         html, body { width: 100%; height: 100%; overflow: hidden; background-color: var(--bg-dark); font-family: var(--font-kanit); color: #f8fafc; touch-action: none; }
         #game-container { position: relative; width: 100%; height: 100%; overflow: hidden; }
-        #game-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #webgl-canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #webgl-canvas-container canvas { display: block; width: 100% !important; height: 100% !important; }
         .hidden { display: none !important; }
 
         /* HUD */
-        #hud { position: absolute; top: 0; left: 0; width: 100%; z-index: 20; padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(180deg, rgba(2, 7, 4, 0.9) 0%, rgba(2, 7, 4, 0) 100%); pointer-events: none; }
+        #hud { position: absolute; top: 0; left: 0; width: 100%; z-index: 20; padding: 14px 20px; display: flex; flex-direction: column; gap: 8px; background: linear-gradient(180deg, rgba(2, 7, 4, 0.92) 0%, rgba(2, 7, 4, 0) 100%); pointer-events: none; }
         .hud-bar { display: flex; justify-content: space-between; align-items: center; }
-        .player-badge { display: flex; align-items: center; gap: 8px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(74, 222, 128, 0.4); padding: 4px 14px; border-radius: 9999px; backdrop-filter: blur(8px); font-family: var(--font-cinzel); font-size: 0.85rem; font-weight: 800; color: var(--loki-gold); text-shadow: 0 0 10px rgba(251, 191, 36, 0.5); }
+        .player-badge { display: flex; align-items: center; gap: 8px; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(74, 222, 128, 0.4); padding: 4px 14px; border-radius: 9999px; backdrop-filter: blur(8px); font-family: var(--font-cinzel); font-size: 0.85rem; font-weight: 800; color: var(--loki-gold); text-shadow: 0 0 10px rgba(251, 191, 36, 0.6); }
         .music-indicator { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #a7f3d0; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 12px; border-radius: 9999px; }
         .meter-box { display: flex; flex-direction: column; gap: 4px; }
         .meter-header { display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; color: #e2e8f0; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
@@ -68,7 +70,7 @@
 </head>
 <body>
     <div id="game-container">
-        <canvas id="game-canvas"></canvas>
+        <div id="webgl-canvas-container"></div>
 
         <header id="hud" class="hidden">
             <div class="hud-bar">
@@ -78,7 +80,7 @@
                 </div>
                 <div class="music-indicator">
                     <span>🎵</span>
-                    <span>Sia - Snowman</span>
+                    <span>Sia - Snowman (3D Audio)</span>
                 </div>
             </div>
             <div class="meter-box">
@@ -105,27 +107,27 @@
             <div id="pull-btn" class="pull-action-button">
                 <span class="pull-btn-icon">⚡</span>
                 <span class="pull-btn-text">ออกแรงดึง (PULL!)</span>
-                <span class="pull-btn-sub">หรือกด [SPACEBAR] / สไลด์นิ้วไปข้างหน้า</span>
+                <span class="pull-btn-sub">แตะรัวๆ หรือกด [SPACEBAR] / [ลูกศรขวา]</span>
             </div>
         </div>
 
         <section id="screen-custom" class="modal-overlay">
             <div class="modal-card">
                 <h2 class="cinematic-sub">MARVEL STUDIOS MEME PRESENTS</h2>
-                <h1 class="cinematic-title">LOKI<br><span class="gold-text">GOD OF STORIES</span></h1>
+                <h1 class="cinematic-title">LOKI<br><span class="gold-text">GOD OF STORIES 3D</span></h1>
                 <p class="cinematic-desc">
                     <i>"I want you to know that I'm never leaving..."</i><br>
-                    แต่งตัวละครโลกิของคุณ แล้วออกไปแบกรับเส้นเวลาของมัลติเวิร์ส!
+                    ควบคุมโลกิ 3 มิติ ลากเส้นเวลากาลเวลาที่หนักอึ้งขึ้นสู่บัลลังก์ทองคำ Citadel!
                 </p>
 
                 <div class="custom-panel">
                     <div class="input-group">
-                        <label for="player-name-input">👤 ชื่อของผู้แบกรับ:</label>
-                        <input type="text" id="player-name-input" maxlength="20" placeholder="พิมพ์ชื่อของคุณ (เช่น โบ๊ท เดอะแบก)" value="โลกิ ผู้แบกรับ">
+                        <label for="player-name-input">👤 ชื่อของผู้แบกรับ (Hero Name):</label>
+                        <input type="text" id="player-name-input" maxlength="25" placeholder="พิมพ์ชื่อของคุณ (เช่น โบ๊ท เดอะแบก)" value="โลกิ ผู้แบกรับ">
                     </div>
 
                     <div class="input-group">
-                        <label>👑 มงกุฎและเขา:</label>
+                        <label>👑 มงกุฎและเขา 3 มิติ:</label>
                         <div class="choice-grid" id="horn-choices">
                             <button type="button" class="choice-btn active" data-horn="gold">👑 เขาทองคำ (God of Stories)</button>
                             <button type="button" class="choice-btn" data-horn="sylvie">🗡️ เขาหัก Sylvie</button>
@@ -135,12 +137,12 @@
                     </div>
 
                     <div class="input-group">
-                        <label>🧥 เสื้อผ้าและเสื้อคลุม:</label>
+                        <label>🧥 เสื้อคลุม 3D:</label>
                         <div class="choice-grid" id="outfit-choices">
                             <button type="button" class="choice-btn active" data-outfit="emerald">🌿 ผ้าคลุมมรกตพระเจ้า</button>
                             <button type="button" class="choice-btn" data-outfit="tva">👔 เสื้อโค้ต TVA Variant</button>
-                            <button type="button" class="choice-btn" data-outfit="armor">🛡️ เกราะทองคำ Asgard</button>
-                            <button type="button" class="choice-btn" data-outfit="suit">💼 ชุดสูทดำ Modern</button>
+                            <button type="button" class="choice-btn" data-outfit="gold">🛡️ เกราะทองคำ Asgard</button>
+                            <button type="button" class="choice-btn" data-outfit="dark">💼 ผ้าคลุมดำมืด Quantum</button>
                         </div>
                     </div>
 
@@ -166,7 +168,7 @@
                 </div>
 
                 <button id="btn-start-game" class="main-cta-btn">
-                    <span>⚡ เข้าสู่บทบาท & เริ่มแบก (เปิดเสียง 🎵)</span>
+                    <span>⚡ เข้าสู่โลก 3D & เริ่มแบก (เปิดเสียง 🎵)</span>
                 </button>
             </div>
         </section>
@@ -183,395 +185,13 @@
             <div class="modal-card">
                 <h2 class="cinematic-sub gold-text">FOR YOU. FOR ALL OF US.</h2>
                 <h1 class="cinematic-title win-title" id="win-hero-title">GOD OF STORIES</h1>
-                <p class="cinematic-desc" id="win-desc">คุณก้าวขึ้นสู่ขั้นบันไดสุดท้ายและนั่งลงบนบัลลังก์ทองคำสำเร็จ!<br>สายกาลเวลาทั้งมวลแตกกิ่งก้านเป็น <b>ต้นไม้อิกดราซิล</b> ชั่วนิรันดร์ 🌲👑</p>
-                <button id="btn-restart-game" class="main-cta-btn win-cta">👑 ครองบัลลังก์ต่อไป (เล่นรอบใหม่)</button>
+                <p class="cinematic-desc" id="win-desc">คุณก้าวขึ้นสู่ขั้นบันไดสุดท้ายและนั่งลงบนบัลลังก์ทองคำสำเร็จ!<br>สายกาลเวลาทั้งมวลแตกกิ่งก้านเป็น <b>ต้นไม้อิกดราซิล 3 มิติ</b> แผ่ไพศาลไปทั่วทุกมิติ</p>
+                <button id="btn-restart-game" class="main-cta-btn win-cta">👑 นั่งครองบัลลังก์ต่อไป (เล่นรอบใหม่)</button>
             </div>
         </section>
     </div>
 
-    <script>
-        // 1. Audio Engine
-        class SoundEngine {
-            constructor() {
-                this.ctx = null; this.isPlaying = false; this.stepTimer = null; this.currentStep = 0;
-            }
-            init() {
-                if (!this.ctx) {
-                    const AC = window.AudioContext || window.webkitAudioContext;
-                    this.ctx = new AC();
-                }
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-            }
-            play() { this.init(); this.isPlaying = true; this.startSnowman(); }
-            stop() { this.isPlaying = false; if (this.stepTimer) clearTimeout(this.stepTimer); }
-            startSnowman() {
-                if (!this.isPlaying) return;
-                const m = [
-                    { note: 261.63, dur: 0.4 }, { note: 329.63, dur: 0.4 }, { note: 392.00, dur: 0.6 },
-                    { note: 349.23, dur: 0.4 }, { note: 329.63, dur: 0.6 }, { note: 293.66, dur: 0.6 },
-                    { note: 261.63, dur: 0.4 }, { note: 293.66, dur: 0.4 }, { note: 329.63, dur: 0.6 },
-                    { note: 293.66, dur: 0.4 }, { note: 261.63, dur: 0.8 },
-                    { note: 261.63, dur: 0.3 }, { note: 329.63, dur: 0.3 }, { note: 392.00, dur: 0.4 },
-                    { note: 523.25, dur: 0.6 }, { note: 493.88, dur: 0.4 }, { note: 440.00, dur: 0.4 }, { note: 392.00, dur: 0.8 },
-                    { note: 349.23, dur: 0.4 }, { note: 392.00, dur: 0.4 }, { note: 440.00, dur: 0.5 },
-                    { note: 392.00, dur: 0.4 }, { note: 349.23, dur: 0.4 }, { note: 329.63, dur: 0.8 }
-                ];
-                const c = [
-                    [130.81, 164.81, 196.00], [174.61, 220.00, 261.63],
-                    [146.83, 174.61, 220.00], [196.00, 246.94, 293.66]
-                ];
-                this.currentStep = 0;
-                const tick = () => {
-                    if (!this.isPlaying) return;
-                    const item = m[this.currentStep % m.length];
-                    this.playBell(item.note, item.dur * 1.2);
-                    if (this.currentStep % 4 === 0) {
-                        this.playPad(c[Math.floor(this.currentStep / 4) % c.length], 2.2);
-                    }
-                    this.currentStep++;
-                    this.stepTimer = setTimeout(tick, item.dur * 750);
-                };
-                tick();
-            }
-            playBell(freq, duration) {
-                if (!this.ctx) return;
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-                osc.type = 'sine'; osc.frequency.setValueAtTime(freq, now);
-                g.gain.setValueAtTime(0.001, now);
-                g.gain.exponentialRampToValueAtTime(0.2, now + 0.04);
-                g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-                osc.connect(g); g.connect(this.ctx.destination);
-                osc.start(now); osc.stop(now + duration);
-            }
-            playPad(freqs, duration) {
-                if (!this.ctx) return;
-                const now = this.ctx.currentTime;
-                freqs.forEach(f => {
-                    const osc = this.ctx.createOscillator(), g = this.ctx.createGain(), flt = this.ctx.createBiquadFilter();
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(f, now);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(450, now);
-                    g.gain.setValueAtTime(0.001, now);
-                    g.gain.linearRampToValueAtTime(0.04, now + 0.5);
-                    g.gain.linearRampToValueAtTime(0.0001, now + duration);
-                    osc.connect(flt); flt.connect(g); g.connect(this.ctx.destination);
-                    osc.start(now); osc.stop(now + duration);
-                });
-            }
-            playPullFX() {
-                if (!this.ctx) return;
-                const now = this.ctx.currentTime;
-                const osc = this.ctx.createOscillator(), g = this.ctx.createGain();
-                osc.type = 'sine'; osc.frequency.setValueAtTime(90, now);
-                osc.frequency.exponentialRampToValueAtTime(25, now + 0.22);
-                g.gain.setValueAtTime(0.35, now);
-                g.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
-                osc.connect(g); g.connect(this.ctx.destination);
-                osc.start(now); osc.stop(now + 0.22);
-            }
-        }
-        const soundEngine = new SoundEngine();
-
-        // 2. Physics & Sparks
-        class CableSegment { constructor(x, y) { this.x = x; this.y = y; this.oldX = x; this.oldY = y; } }
-        class TimelineCable {
-            constructor(startX, startY, length, strandColor, label = "") {
-                this.label = label; this.color = strandColor || "#22c55e";
-                this.segments = []; this.numSegments = 16; this.segLength = length / this.numSegments;
-                this.energyPulses = [{ pos: Math.random(), speed: 0.01 + Math.random() * 0.008 }];
-                for (let i = 0; i < this.numSegments; i++) {
-                    this.segments.push(new CableSegment(startX - (i * this.segLength), startY + (i * 3.5)));
-                }
-            }
-            update(handX, handY, groundLevel, dt, sparkEmitter) {
-                this.segments[0].x = handX; this.segments[0].y = handY;
-                for (let i = 1; i < this.numSegments; i++) {
-                    const seg = this.segments[i];
-                    const vx = (seg.x - seg.oldX) * 0.94, vy = (seg.y - seg.oldY) * 0.94;
-                    seg.oldX = seg.x; seg.oldY = seg.y;
-                    seg.x += vx; seg.y += vy + 1.2;
-                    const localGround = groundLevel + (seg.x * -0.15);
-                    if (seg.y > localGround) {
-                        seg.y = localGround;
-                        if (Math.abs(vx) > 0.4 && Math.random() < 0.25) sparkEmitter.addSpark(seg.x, seg.y, this.color);
-                    }
-                }
-                for (let iter = 0; iter < 5; iter++) {
-                    for (let i = 0; i < this.numSegments - 1; i++) {
-                        const s1 = this.segments[i], s2 = this.segments[i + 1];
-                        const dx = s2.x - s1.x, dy = s2.y - s1.y;
-                        const dist = Math.hypot(dx, dy) || 1;
-                        const diff = (this.segLength - dist) / dist;
-                        const offX = dx * diff * 0.5, offY = dy * diff * 0.5;
-                        if (i !== 0) { s1.x -= offX; s1.y -= offY; }
-                        s2.x += offX; s2.y += offY;
-                    }
-                }
-                this.energyPulses.forEach(p => p.pos = (p.pos + p.speed) % 1);
-            }
-            draw(ctx, mainColor) {
-                if (this.segments.length < 2) return;
-                ctx.save(); ctx.beginPath(); ctx.moveTo(this.segments[0].x, this.segments[0].y);
-                for (let i = 1; i < this.numSegments - 1; i++) {
-                    const xc = (this.segments[i].x + this.segments[i + 1].x) / 2;
-                    const yc = (this.segments[i].y + this.segments[i + 1].y) / 2;
-                    ctx.quadraticCurveTo(this.segments[i].x, this.segments[i].y, xc, yc);
-                }
-                ctx.lineTo(this.segments[this.numSegments - 1].x, this.segments[this.numSegments - 1].y);
-                ctx.strokeStyle = this.color || mainColor; ctx.shadowColor = this.color || mainColor;
-                ctx.shadowBlur = 16; ctx.lineWidth = 5; ctx.stroke();
-                if (this.label) {
-                    const mid = this.segments[Math.floor(this.numSegments * 0.55)];
-                    ctx.font = 'bold 12px "Kanit", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                    const w = ctx.measureText(this.label).width + 16;
-                    ctx.fillStyle = 'rgba(2, 8, 4, 0.9)'; ctx.strokeStyle = this.color; ctx.lineWidth = 1.2;
-                    ctx.beginPath(); ctx.roundRect(mid.x - w / 2, mid.y - 20, w, 22, 6); ctx.fill(); ctx.stroke();
-                    ctx.fillStyle = '#e2e8f0'; ctx.fillText(this.label, mid.x, mid.y - 9);
-                }
-                ctx.restore();
-            }
-        }
-        class SparkSystem {
-            constructor() { this.sparks = []; this.stars = []; }
-            initStars(w, h) {
-                this.stars = [];
-                for (let i = 0; i < 70; i++) this.stars.push({ x: Math.random() * w, y: Math.random() * h, size: Math.random() * 2 + 0.5, alpha: Math.random(), speed: Math.random() * 0.3 + 0.1 });
-            }
-            addSpark(x, y, color = '#fbbf24') {
-                for (let i = 0; i < 4; i++) this.sparks.push({ x, y, vx: -(Math.random() * 3 + 1), vy: -(Math.random() * 2.5 + 0.5), life: 1, color });
-            }
-            update(w, h, dt, speedX) {
-                this.stars.forEach(s => { s.x -= (speedX * 0.2 + s.speed); if (s.x < 0) s.x = w; });
-                this.sparks = this.sparks.filter(sp => { sp.x += sp.vx; sp.y += sp.vy; sp.vy += 0.1; sp.life -= dt * 2.8; return sp.life > 0; });
-            }
-            draw(ctx) {
-                ctx.save();
-                this.stars.forEach(s => { ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2); ctx.fillStyle = `rgba(187, 247, 208, ${s.alpha * 0.7})`; ctx.fill(); });
-                this.sparks.forEach(sp => { ctx.beginPath(); ctx.arc(sp.x, sp.y, 2.5 * sp.life, 0, Math.PI * 2); ctx.fillStyle = sp.color; ctx.shadowColor = sp.color; ctx.shadowBlur = 10; ctx.fill(); });
-                ctx.restore();
-            }
-        }
-
-        // 3. Loki Character (Customizable Side-View)
-        class LokiCharacter {
-            constructor() {
-                this.x = 0; this.y = 0; this.stepPhase = 0; this.strideSpeed = 0; this.handsX = 0; this.handsY = 0;
-                this.playerName = "โลกิ ผู้แบกรับ"; this.hornStyle = "gold"; this.outfitStyle = "emerald"; this.magicColor = "#22c55e";
-            }
-            updateConfig(name, horn, outfit, color) {
-                this.playerName = name || "โลกิ ผู้แบกรับ"; this.hornStyle = horn || "gold"; this.outfitStyle = outfit || "emerald"; this.magicColor = color || "#22c55e";
-            }
-            update(screenX, screenY, isStraining, dt) {
-                this.x = screenX; this.y = screenY;
-                if (isStraining) { this.stepPhase += dt * 7; this.strideSpeed = Math.min(1, this.strideSpeed + dt * 4); }
-                else { this.strideSpeed = Math.max(0, this.strideSpeed - dt * 2.5); }
-                const bob = Math.sin(this.stepPhase) * 6 * this.strideSpeed;
-                this.handsX = this.x - 22; this.handsY = this.y + 16 + bob;
-            }
-            draw(ctx, distanceRatio) {
-                ctx.save(); ctx.translate(this.x, this.y);
-                const bob = Math.sin(this.stepPhase) * 6 * this.strideSpeed;
-                ctx.rotate(0.28);
-
-                // Aura
-                const auraGrad = ctx.createRadialGradient(0, 0, 10, 0, 0, 60);
-                auraGrad.addColorStop(0, this.magicColor + '55'); auraGrad.addColorStop(1, 'transparent');
-                ctx.fillStyle = auraGrad; ctx.beginPath(); ctx.arc(0, -10 + bob, 60, 0, Math.PI * 2); ctx.fill();
-
-                // Cloak
-                const wind = Math.sin(Date.now() * 0.007) * 14;
-                ctx.beginPath(); ctx.moveTo(-16, -18 + bob); ctx.quadraticCurveTo(-50, 20 + bob, -75 + wind, 55 + bob);
-                ctx.lineTo(-40 + wind, 60 + bob); ctx.quadraticCurveTo(-20, 25 + bob, 10, -10 + bob); ctx.closePath();
-                ctx.fillStyle = this.outfitStyle === 'tva' ? '#613b19' : (this.outfitStyle === 'armor' ? '#22382b' : '#06381e');
-                ctx.strokeStyle = this.magicColor; ctx.lineWidth = 1.5; ctx.stroke(); ctx.fill();
-
-                // Legs
-                const lStride = Math.sin(this.stepPhase) * 18 * this.strideSpeed;
-                const rStride = -Math.sin(this.stepPhase) * 18 * this.strideSpeed;
-                ctx.fillStyle = '#0f172a'; ctx.fillRect(-20 + lStride, 20 + bob, 12, 28);
-                ctx.fillStyle = '#1e293b'; ctx.fillRect(4 + rStride, 18 + bob, 12, 30);
-
-                // Body
-                ctx.beginPath(); ctx.roundRect(-18, -26 + bob, 34, 48, 8);
-                ctx.fillStyle = this.outfitStyle === 'tva' ? '#834c20' : (this.outfitStyle === 'armor' ? '#1e3a2f' : '#0e4425');
-                ctx.fill();
-
-                // Head
-                ctx.beginPath(); ctx.arc(4, -38 + bob, 15, 0, Math.PI * 2); ctx.fillStyle = '#fed7aa'; ctx.fill();
-                ctx.fillStyle = this.magicColor; ctx.fillRect(10, -40 + bob, 4, 3); // Eye
-
-                // Horns
-                ctx.strokeStyle = '#fbbf24'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 15; ctx.lineWidth = 4;
-                if (this.hornStyle === 'frost') ctx.strokeStyle = '#38bdf8';
-                ctx.beginPath(); ctx.moveTo(4, -50 + bob); ctx.bezierCurveTo(24, -68 + bob, 40, -56 + bob, 48, -82 + bob); ctx.stroke();
-                ctx.beginPath(); ctx.moveTo(-4, -50 + bob); ctx.bezierCurveTo(-18, -66 + bob, -28, -50 + bob, -34, -76 + bob); ctx.stroke();
-
-                // Hands & Arms
-                ctx.strokeStyle = '#fed7aa'; ctx.lineWidth = 6; ctx.lineCap = 'round';
-                ctx.beginPath(); ctx.moveTo(0, -14 + bob); ctx.lineTo(-14, 4 + bob); ctx.lineTo(-24, 14 + bob); ctx.stroke();
-                ctx.fillStyle = this.magicColor; ctx.shadowColor = this.magicColor; ctx.shadowBlur = 18;
-                ctx.beginPath(); ctx.arc(-24, 15 + bob, 8, 0, Math.PI * 2); ctx.fill();
-
-                // Player Name Badge
-                ctx.font = 'bold 13px "Kanit", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-                const text = `👑 ${this.playerName}`, w = ctx.measureText(text).width + 20;
-                ctx.fillStyle = 'rgba(2, 7, 4, 0.9)'; ctx.strokeStyle = this.magicColor; ctx.lineWidth = 1.5;
-                ctx.beginPath(); ctx.roundRect(-w / 2, -108 + bob, w, 26, 8); ctx.fill(); ctx.stroke();
-                ctx.fillStyle = '#fbbf24'; ctx.fillText(text, 0, -95 + bob);
-
-                ctx.restore();
-            }
-            drawEnvironment(ctx, w, h, camX, distRatio) {
-                ctx.save();
-                const groundY = h * 0.75, numStairs = 12, stepW = 140, stepH = 28;
-                for (let i = 0; i < numStairs; i++) {
-                    const sx = (i * stepW) - (camX % stepW) - 100;
-                    const sy = groundY - (i * stepH) + (camX * 0.18 % stepH);
-                    ctx.fillStyle = '#07150e'; ctx.fillRect(sx, sy, stepW + 2, h - sy);
-                    ctx.fillStyle = '#0f2c1c'; ctx.fillRect(sx, sy, stepW + 2, 8);
-                }
-                const throneX = w * 0.85, throneY = h * 0.28 - (distRatio * 20);
-                ctx.translate(throneX, throneY);
-                ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 20;
-                ctx.beginPath(); ctx.moveTo(-28, 25); ctx.lineTo(-32, -55); ctx.lineTo(0, -85); ctx.lineTo(32, -55); ctx.lineTo(28, 25); ctx.fill();
-                ctx.fillStyle = '#d97706'; ctx.fillRect(-38, 25, 76, 18);
-                ctx.restore();
-            }
-        }
-
-        // 4. Main Controller
-        const MEME_PRESETS = {
-            daily: ["การนอน 8 ชม.", "เงินในบัญชี", "สุขภาพจิต", "ความฝัน", "เวลาว่าง", "ความหวัง"],
-            work: ["Legacy Code", "Deadline พรุ่งนี้", "แก้งานรอบที่ 8", "ลูกค้าเปลี่ยนใจ", "Production DB", "เดอะแบกของทีม"],
-            student: ["โปรเจกต์กลุ่ม", "สอบไฟนอล", "สไลด์รายงาน", "เพื่อนหายไปไหน", "เกรดเฉลี่ย", "อาจารย์สั่งงานเพิ่ม"],
-            marvel: ["Sacred Timeline", "Earth-616", "Kang", "Sylvie", "Mobius Jet-Ski", "Temporal Loom"]
-        };
-
-        const canvas = document.getElementById('game-canvas'), ctx = canvas.getContext('2d');
-        const loki = new LokiCharacter(), sparks = new SparkSystem();
-        let width = 0, height = 0;
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            sparks.initStars(width, height);
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        let state = 'MENU', distance = 0, cameraX = 0, tension = 20, cables = [], isPulling = false, pullCooldown = 0, lastTime = 0;
-        let selectedHorn = "gold", selectedOutfit = "emerald", selectedColor = "#22c55e";
-
-        const hud = document.getElementById('hud'), controlsUI = document.getElementById('controls-ui');
-        const distanceText = document.getElementById('distance-text'), distanceBar = document.getElementById('distance-bar-fill');
-        const tensionText = document.getElementById('tension-text'), tensionBar = document.getElementById('tension-bar-fill');
-        const hudPlayerName = document.getElementById('hud-player-name'), hudHornIcon = document.getElementById('hud-horn-icon');
-        const screenCustom = document.getElementById('screen-custom'), screenGameOver = document.getElementById('screen-gameover'), screenVictory = document.getElementById('screen-victory');
-        const nameInput = document.getElementById('player-name-input'), scenarioSelect = document.getElementById('meme-scenario-select');
-
-        document.querySelectorAll('#horn-choices .choice-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('#horn-choices .choice-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active'); selectedHorn = btn.dataset.horn;
-            };
-        });
-        document.querySelectorAll('#outfit-choices .choice-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('#outfit-choices .choice-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active'); selectedOutfit = btn.dataset.outfit;
-            };
-        });
-        document.querySelectorAll('#color-choices .color-dot').forEach(dot => {
-            dot.onclick = () => {
-                document.querySelectorAll('#color-choices .color-dot').forEach(d => d.classList.remove('active'));
-                dot.classList.add('active'); selectedColor = dot.dataset.color;
-            };
-        });
-
-        function pull() {
-            if (state !== 'PLAYING') return;
-            isPulling = true; pullCooldown = 0.3;
-            distance = Math.min(100, distance + 1.8);
-            cameraX += 28; tension = Math.max(0, tension - 6);
-            soundEngine.playPullFX(); sparks.addSpark(loki.handsX, loki.handsY, selectedColor);
-            if (distance >= 100) {
-                state = 'VICTORY'; controlsUI.classList.add('hidden'); screenVictory.classList.remove('hidden');
-                document.getElementById('win-hero-title').innerText = `${loki.playerName.toUpperCase()} - THE GOD OF STORIES`;
-            }
-        }
-
-        document.getElementById('pull-btn').addEventListener('pointerdown', e => { e.preventDefault(); pull(); });
-        canvas.addEventListener('pointerdown', () => { if (state === 'PLAYING') pull(); });
-        window.addEventListener('keydown', e => { if (state === 'PLAYING' && (e.code === 'Space' || e.code === 'ArrowRight' || e.code === 'KeyD')) { e.preventDefault(); pull(); } });
-
-        function startGame() {
-            const pName = nameInput.value.trim() || "โลกิ";
-            loki.updateConfig(pName, selectedHorn, selectedOutfit, selectedColor);
-            hudPlayerName.innerText = pName.toUpperCase();
-            hudHornIcon.innerText = selectedHorn === 'frost' ? '❄️' : (selectedHorn === 'president' ? '🎩' : '👑');
-
-            screenCustom.classList.add('hidden'); screenGameOver.classList.add('hidden'); screenVictory.classList.add('hidden');
-            hud.classList.remove('hidden'); controlsUI.classList.remove('hidden');
-
-            state = 'PLAYING'; distance = 0; cameraX = 0; tension = 25; cables = [];
-            const labels = MEME_PRESETS[scenarioSelect.value] || MEME_PRESETS.daily;
-            const sx = width * 0.52, sy = height * 0.65;
-            cables.push(new TimelineCable(sx, sy, 320, selectedColor, "เดอะแบกแห่งพหุภพ"));
-            labels.forEach((txt, idx) => cables.push(new TimelineCable(sx, sy, 260 + (idx * 25), selectedColor, txt)));
-            soundEngine.play();
-        }
-
-        document.getElementById('btn-start-game').onclick = startGame;
-        document.getElementById('btn-retry-game').onclick = startGame;
-        document.getElementById('btn-restart-game').onclick = () => { screenVictory.classList.add('hidden'); screenCustom.classList.remove('hidden'); state = 'MENU'; };
-
-        function loop(timestamp) {
-            requestAnimationFrame(loop);
-            const dt = Math.min(0.08, (timestamp - lastTime) / 1000 || 0.016);
-            lastTime = timestamp;
-
-            if (pullCooldown > 0) { pullCooldown -= dt; if (pullCooldown <= 0) isPulling = false; }
-            ctx.fillStyle = '#020704'; ctx.fillRect(0, 0, width, height);
-
-            sparks.update(width, height, dt, isPulling ? 3.5 : -0.5);
-            sparks.draw(ctx);
-
-            const distRatio = distance / 100;
-            loki.drawEnvironment(ctx, width, height, cameraX, distRatio);
-
-            const lx = width * 0.52, ly = height * 0.65, gy = height * 0.75;
-            if (state === 'PLAYING') {
-                tension += dt * 9;
-                distance = Math.max(0, distance - (tension * 0.006 * dt));
-                cameraX = Math.max(0, cameraX - (tension * 0.15 * dt));
-                if (tension >= 100) {
-                    state = 'GAMEOVER'; controlsUI.classList.add('hidden'); screenGameOver.classList.remove('hidden'); soundEngine.stop();
-                }
-                distanceText.innerText = `${Math.floor(distance)} / 100 เมตร`;
-                distanceBar.style.width = distance + '%';
-                tensionBar.style.width = Math.min(100, tension) + '%';
-                tensionText.innerText = tension > 70 ? "อันตราย! กำลังจะโดนดึงตกบันได!" : (tension > 40 ? "ตึงมาก! รีบออกแรงดึง!" : "เสถียร (กำลังก้าวไปข้างหน้า)");
-                cables.forEach(c => c.update(loki.handsX, loki.handsY, gy, dt, sparks));
-            }
-
-            cables.forEach(c => c.draw(ctx, selectedColor));
-            loki.update(lx, ly, isPulling, dt);
-            loki.draw(ctx, distRatio);
-
-            if (state === 'VICTORY') {
-                ctx.save(); ctx.strokeStyle = selectedColor; ctx.shadowColor = selectedColor; ctx.shadowBlur = 30; ctx.lineWidth = 3.5;
-                const tx = width * 0.85, ty = height * 0.28;
-                for (let i = 0; i < 18; i++) {
-                    const angle = (i / 17) * Math.PI * 1.5 - Math.PI * 1.25;
-                    const len = 150 + Math.sin(timestamp * 0.002 + i) * 35;
-                    ctx.beginPath(); ctx.moveTo(tx, ty);
-                    ctx.quadraticCurveTo(tx + Math.cos(angle+0.25)*len*0.6, ty + Math.sin(angle+0.25)*len*0.6, tx + Math.cos(angle)*len, ty + Math.sin(angle)*len);
-                    ctx.stroke();
-                }
-                ctx.restore();
-            }
-        }
-        requestAnimationFrame(loop);
-    </script>
+    <script src="js/audio.js"></script>
+    <script src="js/three_game.js"></script>
 </body>
 </html>
