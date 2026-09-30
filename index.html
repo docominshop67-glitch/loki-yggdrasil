@@ -3,113 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Loki: The God of Stories - Snowman Edition</title>
+    <title>Loki: The God of Stories - Meme Tug Edition</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="game-container">
+        <!-- Main Game Canvas (Side-View Engine) -->
         <canvas id="game-canvas"></canvas>
 
-        <!-- Top HUD -->
-        <header id="hud" class="ui-panel hidden">
-            <div class="hud-top">
-                <div class="title-badge">
-                    <span class="horns-icon">👑</span>
-                    <span class="badge-text">GOD OF STORIES</span>
+        <!-- Top HUD during Game -->
+        <header id="hud" class="hidden">
+            <div class="hud-bar">
+                <div class="player-badge">
+                    <span class="horns-icon" id="hud-horn-icon">👑</span>
+                    <span id="hud-player-name">LOKI</span>
                 </div>
-                <div class="song-badge">
-                    <span class="music-note">🎵</span>
-                    <span id="music-status">Sia - Snowman</span>
-                </div>
-            </div>
-
-            <!-- Progress to the Throne -->
-            <div class="progress-section">
-                <div class="progress-labels">
-                    <span>ก้าวสู่บัลลังก์แห่งกาลเวลา</span>
-                    <span id="progress-percent">0%</span>
-                </div>
-                <div class="progress-bar-bg">
-                    <div id="progress-bar-fill"></div>
+                <div class="music-indicator">
+                    <span class="note-anim">🎵</span>
+                    <span>Sia - Snowman</span>
                 </div>
             </div>
 
-            <!-- Multiverse Health -->
-            <div class="health-section">
-                <div class="health-labels">
-                    <span>เสถียรภาพมัลติเวิร์ส (อย่าให้แตกสลาย)</span>
-                    <span id="health-percent">100%</span>
+            <!-- Distance to Throne Meter -->
+            <div class="meter-box">
+                <div class="meter-header">
+                    <span>ระยะทางสู่บัลลังก์แห่งกาลเวลา</span>
+                    <span id="distance-text">0 / 100 เมตร</span>
                 </div>
-                <div class="health-bar-bg">
-                    <div id="health-bar-fill"></div>
+                <div class="meter-track">
+                    <div id="distance-bar-fill"></div>
+                </div>
+            </div>
+
+            <!-- Tension & Multiverse Resistance Meter -->
+            <div class="meter-box">
+                <div class="meter-header">
+                    <span>แรงดึงมัลติเวิร์ส (อย่าให้โดนลากตกบันได!)</span>
+                    <span id="tension-text">เสถียร</span>
+                </div>
+                <div class="meter-track resistance-track">
+                    <div id="tension-bar-fill"></div>
                 </div>
             </div>
         </header>
 
-        <!-- Bottom Controls Hint -->
-        <div id="controls-hint" class="hidden">
-            <span class="pulse-icon">👆</span> ปัดหน้าจอขึ้นเพื่อก้าวเดิน & แตะเส้นเวลาที่ซีดจางเพื่อส่งพลังเวทย์!
+        <!-- Controls Action Pad for Mobile & Desktop -->
+        <div id="controls-ui" class="hidden">
+            <div id="pull-btn" class="pull-action-button">
+                <span class="pull-btn-glow"></span>
+                <span class="pull-btn-icon">⚡</span>
+                <span class="pull-btn-text">ออกแรงดึง (PULL!)</span>
+                <span class="pull-btn-sub">หรือกด [SPACEBAR] / สไลด์นิ้วไปข้างหน้า</span>
+            </div>
         </div>
 
-        <!-- Start Screen -->
-        <section id="screen-start" class="screen-modal">
-            <div class="modal-content">
-                <div class="glow-orb"></div>
-                <h2 class="sub-title">MARVEL STUDIOS MEME PRESENTS</h2>
-                <h1 class="main-title">LOKI<br><span class="gold-text">YGGDRASIL</span></h1>
-                <p class="desc">
-                    <i>"I want you to know that I'm never leaving..."</i><br><br>
-                    รับบทเป็นโลกิ <b>"เดอะแบกแห่งพหุภพ"</b><br>
-                    รวบรวมเส้นเวลาที่กำลังจะสลายเป็นขี้เถ้า ลากขึ้นสู่บัลลังก์เพื่อถักทอเป็นต้นไม้อิกดราซิล
+        <!-- 1. Start & Customization Screen -->
+        <section id="screen-custom" class="modal-overlay">
+            <div class="modal-card">
+                <h2 class="cinematic-sub">MARVEL STUDIOS MEME PRESENTS</h2>
+                <h1 class="cinematic-title">LOKI<br><span class="gold-text">GOD OF STORIES</span></h1>
+                <p class="cinematic-desc">
+                    <i>"I want you to know that I'm never leaving..."</i><br>
+                    แต่งตัวละครโลกิของคุณ แล้วออกไปแบกรับเส้นเวลาของมัลติเวิร์ส!
                 </p>
 
-                <!-- Meme Tag Selector -->
-                <div class="meme-mode-box">
-                    <label>🎭 ธีมของสิ่งที่คุณกำลังแบก:</label>
-                    <select id="meme-mode-select">
-                        <option value="daily">ชีวิตจริง (การนอน, สุขภาพ, หนี้สิน, ความหวัง)</option>
-                        <option value="work">คนทำงาน (Legacy Code, Deadline, บอส, ลูกค้า)</option>
-                        <option value="student">เด็กมหาลัย (โปรเจกต์กลุ่ม, สอบไฟนอล, งานเดี่ยวที่ทำคนเดียว)</option>
-                        <option value="marvel">Marvel Lore (Earth-616, Kang, TVA, Sacred Timeline)</option>
-                    </select>
+                <!-- Customization Form -->
+                <div class="custom-panel">
+                    <!-- 1. Name Input -->
+                    <div class="input-group">
+                        <label for="player-name-input">👤 ชื่อของผู้แบกรับ:</label>
+                        <input type="text" id="player-name-input" maxlength="20" placeholder="พิมพ์ชื่อของคุณ (เช่น โบ๊ท เดอะแบก)" value="โลกิ ผู้แบกรับ">
+                    </div>
+
+                    <!-- 2. Horn Selector -->
+                    <div class="input-group">
+                        <label>👑 มงกุฎและเขา:</label>
+                        <div class="choice-grid" id="horn-choices">
+                            <button type="button" class="choice-btn active" data-horn="gold">👑 เขาทองคำ (God of Stories)</button>
+                            <button type="button" class="choice-btn" data-horn="sylvie">🗡️ เขาหัก Sylvie</button>
+                            <button type="button" class="choice-btn" data-horn="frost">❄️ มงกุฎยักษ์น้ำแข็ง</button>
+                            <button type="button" class="choice-btn" data-horn="president">🎩 หมวกประธานาธิบดี</button>
+                        </div>
+                    </div>
+
+                    <!-- 3. Outfit Selector -->
+                    <div class="input-group">
+                        <label>🧥 เสื้อผ้าและเสื้อคลุม:</label>
+                        <div class="choice-grid" id="outfit-choices">
+                            <button type="button" class="choice-btn active" data-outfit="emerald">🌿 ผ้าคลุมมรกตพระเจ้า</button>
+                            <button type="button" class="choice-btn" data-outfit="tva">👔 เสื้อโค้ต TVA Variant</button>
+                            <button type="button" class="choice-btn" data-outfit="armor">🛡️ เกราะทองคำ Asgard</button>
+                            <button type="button" class="choice-btn" data-outfit="suit">💼 ชุดสูทดำ Modern</button>
+                        </div>
+                    </div>
+
+                    <!-- 4. Magic Color Selector -->
+                    <div class="input-group">
+                        <label>✨ สีพลังเวทมนตร์กาลเวลา:</label>
+                        <div class="color-palette" id="color-choices">
+                            <div class="color-dot active" style="--c: #22c55e;" data-color="#22c55e" title="มรกตกาลเวลา"></div>
+                            <div class="color-dot" style="--c: #f59e0b;" data-color="#f59e0b" title="ทองคำศักดิ์สิทธิ์"></div>
+                            <div class="color-dot" style="--c: #a855f7;" data-color="#a855f7" title="ม่วงควอนตัม"></div>
+                            <div class="color-dot" style="--c: #38bdf8;" data-color="#38bdf8" title="ฟ้าน้ำแข็ง"></div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Meme Scenario Selector -->
+                    <div class="input-group">
+                        <label>🎭 สิ่งที่คุณกำลังแบกอยู่:</label>
+                        <select id="meme-scenario-select">
+                            <option value="daily">ชีวิตจริง (การนอน 8 ชม., สุขภาพจิต, เงินในบัญชี, ความฝัน)</option>
+                            <option value="work">คนทำงาน (Legacy Code, Deadline, บอส, แก้งานรอบที่ 8)</option>
+                            <option value="student">เด็กมหาลัย (โปรเจกต์กลุ่ม, สอบไฟนอล, เพื่อนไม่ทำงาน)</option>
+                            <option value="marvel">Marvel (Sacred Timeline, Earth-616, Kang, TVA)</option>
+                        </select>
+                    </div>
                 </div>
 
-                <button id="btn-start" class="cta-button">
-                    <span class="btn-glow"></span>
-                    <span class="btn-text">⚡ เริ่มกอบกู้เส้นเวลา (เปิดเสียง 🎵)</span>
+                <!-- Launch Button -->
+                <button id="btn-start-game" class="main-cta-btn">
+                    <span class="cta-glow"></span>
+                    <span class="cta-label">⚡ เข้าสู่บทบาท & เริ่มแบก (เปิดเสียง 🎵)</span>
                 </button>
             </div>
         </section>
 
-        <!-- Game Over Screen -->
-        <section id="screen-gameover" class="screen-modal hidden">
-            <div class="modal-content fail">
-                <h1 class="main-title fail-title">มัลติเวิร์สล่มสลาย</h1>
-                <p class="desc">
-                    เส้นเวลาขาดสะบั้นกลายเป็นเส้นสปาเก็ตตี้หมดแล้ว...<br>
-                    คุณประคองทุกอย่างไว้คนเดียวไม่ไหว
+        <!-- 2. Game Over Screen -->
+        <section id="screen-gameover" class="modal-overlay hidden">
+            <div class="modal-card fail-card">
+                <h1 class="cinematic-title fail-title">โดนลากตกบันได!</h1>
+                <p class="cinematic-desc" id="fail-desc">
+                    น้ำหนักของมัลติเวิร์สมันหนักหนาเกินไป...<br>
+                    คุณต้านทานแรงดึงไม่ไหวและถูกสายกาลเวลาดึงกลับสู่วอยด์
                 </p>
-                <button id="btn-retry" class="cta-button fail-btn">
-                    <span class="btn-text">🔄 ลองแบกใหม่อีกครั้ง</span>
+                <button id="btn-retry-game" class="main-cta-btn fail-cta">
+                    <span class="cta-label">🔄 กัดฟันลุกขึ้นมาแบกใหม่!</span>
                 </button>
             </div>
         </section>
 
-        <!-- Victory Screen -->
-        <section id="screen-victory" class="screen-modal hidden">
-            <div class="modal-content win">
-                <h2 class="sub-title gold-text">FOR YOU. FOR ALL OF US.</h2>
-                <h1 class="main-title win-title">GOD OF STORIES</h1>
-                <p class="desc">
-                    คุณเดินมาถึงบัลลังก์สำเร็จ!<br>
-                    เส้นเวลาทั้งหมดเบ่งบานเป็น <b>ต้นไม้อิกดราซิลสีเขียวมรกต</b><br>
-                    คุณได้กลายเป็นผู้พิทักษ์มัลติเวิร์สชั่วนิรันดร์
+        <!-- 3. Victory Screen -->
+        <section id="screen-victory" class="modal-overlay hidden">
+            <div class="modal-card win-card">
+                <h2 class="cinematic-sub gold-text">FOR YOU. FOR ALL OF US.</h2>
+                <h1 class="cinematic-title win-title" id="win-hero-title">GOD OF STORIES</h1>
+                <p class="cinematic-desc" id="win-desc">
+                    คุณก้าวขึ้นสู่ขั้นบันไดสุดท้ายและนั่งลงบนบัลลังก์ทองคำสำเร็จ!<br>
+                    สายกาลเวลาทั้งมวลแตกกิ่งก้านเป็น <b>ต้นไม้อิกดราซิล</b> แผ่ไพศาลไปทั่วทุกมิติ
                 </p>
-                <button id="btn-restart" class="cta-button win-btn">
-                    <span class="btn-text">👑 นั่งบนบัลลังก์ต่อไป (เล่นรอบใหม่)</span>
+                <button id="btn-restart-game" class="main-cta-btn win-cta">
+                    <span class="cta-label">👑 ครองบัลลังก์ต่อไป (เล่นรอบใหม่)</span>
                 </button>
             </div>
         </section>
