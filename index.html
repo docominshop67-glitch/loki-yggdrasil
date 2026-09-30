@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Loki: The God of Stories - Snowman Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Top HUD -->
+        <header id="hud" class="ui-panel hidden">
+            <div class="hud-top">
+                <div class="title-badge">
+                    <span class="horns-icon">👑</span>
+                    <span class="badge-text">GOD OF STORIES</span>
+                </div>
+                <div class="song-badge">
+                    <span class="music-note">🎵</span>
+                    <span id="music-status">Sia - Snowman</span>
+                </div>
+            </div>
+
+            <!-- Progress to the Throne -->
+            <div class="progress-section">
+                <div class="progress-labels">
+                    <span>ก้าวสู่บัลลังก์แห่งกาลเวลา</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progress-bar-fill"></div>
+                </div>
+            </div>
+
+            <!-- Multiverse Health -->
+            <div class="health-section">
+                <div class="health-labels">
+                    <span>เสถียรภาพมัลติเวิร์ส (อย่าให้แตกสลาย)</span>
+                    <span id="health-percent">100%</span>
+                </div>
+                <div class="health-bar-bg">
+                    <div id="health-bar-fill"></div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Bottom Controls Hint -->
+        <div id="controls-hint" class="hidden">
+            <span class="pulse-icon">👆</span> ปัดหน้าจอขึ้นเพื่อก้าวเดิน & แตะเส้นเวลาที่ซีดจางเพื่อส่งพลังเวทย์!
+        </div>
+
+        <!-- Start Screen -->
+        <section id="screen-start" class="screen-modal">
+            <div class="modal-content">
+                <div class="glow-orb"></div>
+                <h2 class="sub-title">MARVEL STUDIOS MEME PRESENTS</h2>
+                <h1 class="main-title">LOKI<br><span class="gold-text">YGGDRASIL</span></h1>
+                <p class="desc">
+                    <i>"I want you to know that I'm never leaving..."</i><br><br>
+                    รับบทเป็นโลกิ <b>"เดอะแบกแห่งพหุภพ"</b><br>
+                    รวบรวมเส้นเวลาที่กำลังจะสลายเป็นขี้เถ้า ลากขึ้นสู่บัลลังก์เพื่อถักทอเป็นต้นไม้อิกดราซิล
+                </p>
+
+                <!-- Meme Tag Selector -->
+                <div class="meme-mode-box">
+                    <label>🎭 ธีมของสิ่งที่คุณกำลังแบก:</label>
+                    <select id="meme-mode-select">
+                        <option value="daily">ชีวิตจริง (การนอน, สุขภาพ, หนี้สิน, ความหวัง)</option>
+                        <option value="work">คนทำงาน (Legacy Code, Deadline, บอส, ลูกค้า)</option>
+                        <option value="student">เด็กมหาลัย (โปรเจกต์กลุ่ม, สอบไฟนอล, งานเดี่ยวที่ทำคนเดียว)</option>
+                        <option value="marvel">Marvel Lore (Earth-616, Kang, TVA, Sacred Timeline)</option>
+                    </select>
+                </div>
+
+                <button id="btn-start" class="cta-button">
+                    <span class="btn-glow"></span>
+                    <span class="btn-text">⚡ เริ่มกอบกู้เส้นเวลา (เปิดเสียง 🎵)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Game Over Screen -->
+        <section id="screen-gameover" class="screen-modal hidden">
+            <div class="modal-content fail">
+                <h1 class="main-title fail-title">มัลติเวิร์สล่มสลาย</h1>
+                <p class="desc">
+                    เส้นเวลาขาดสะบั้นกลายเป็นเส้นสปาเก็ตตี้หมดแล้ว...<br>
+                    คุณประคองทุกอย่างไว้คนเดียวไม่ไหว
+                </p>
+                <button id="btn-retry" class="cta-button fail-btn">
+                    <span class="btn-text">🔄 ลองแบกใหม่อีกครั้ง</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Victory Screen -->
+        <section id="screen-victory" class="screen-modal hidden">
+            <div class="modal-content win">
+                <h2 class="sub-title gold-text">FOR YOU. FOR ALL OF US.</h2>
+                <h1 class="main-title win-title">GOD OF STORIES</h1>
+                <p class="desc">
+                    คุณเดินมาถึงบัลลังก์สำเร็จ!<br>
+                    เส้นเวลาทั้งหมดเบ่งบานเป็น <b>ต้นไม้อิกดราซิลสีเขียวมรกต</b><br>
+                    คุณได้กลายเป็นผู้พิทักษ์มัลติเวิร์สชั่วนิรันดร์
+                </p>
+                <button id="btn-restart" class="cta-button win-btn">
+                    <span class="btn-text">👑 นั่งบนบัลลังก์ต่อไป (เล่นรอบใหม่)</span>
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audio.js"></script>
+    <script src="js/physics.js"></script>
+    <script src="js/loki.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

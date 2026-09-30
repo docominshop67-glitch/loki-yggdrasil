@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Loki: The God of Stories - Snowman Edition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --loki-green: #22c55e;
+            --loki-glow: #4ade80;
+            --loki-gold: #fbbf24;
+            --bg-dark: #020805;
+            --font-cinzel: 'Cinzel', serif;
+            --font-kanit: 'Kanit', sans-serif;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        html, body {
+            width: 100%; height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: var(--font-kanit);
+            color: #f8fafc;
+            touch-action: none;
+        }
+        #game-container {
+            position: relative;
+            width: 100%; height: 100%;
+            overflow: hidden;
+        }
+        #game-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 1;
+        }
+        .hidden { display: none !important; }
+        
+        /* Top HUD */
+        #hud {
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+            z-index: 20;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: linear-gradient(180deg, rgba(2, 8, 5, 0.9) 0%, rgba(2, 8, 5, 0) 100%);
+            pointer-events: none;
+        }
+        .hud-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .title-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(74, 222, 128, 0.4);
+            padding: 4px 12px;
+            border-radius: 9999px;
+            backdrop-filter: blur(8px);
+        }
+        .badge-text {
+            font-family: var(--font-cinzel);
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--loki-gold);
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.6);
+        }
+        .song-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #a7f3d0;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 4px 12px;
+            border-radius: 9999px;
+        }
+        .progress-section, .health-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .progress-labels, .health-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #e2e8f0;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+        .progress-bar-bg, .health-bar-bg {
+            width: 100%; height: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        #progress-bar-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24, #4ade80);
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+            transition: width 0.2s ease-out;
+        }
+        #health-bar-fill {
+            height: 100%; width: 100%;
+            background: linear-gradient(90deg, #ef4444, #eab308, #22c55e);
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.8);
+            transition: width 0.2s ease-out;
+        }
+        #controls-hint {
+            position: absolute;
+            bottom: 20px; width: 100%;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #a7f3d0;
+            z-index: 10;
+            pointer-events: none;
+            animation: pulse 2s infinite ease-in-out;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        .screen-modal {
+            position: absolute;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, rgba(3, 10, 7, 0.9) 0%, rgba(1, 4, 3, 0.97) 100%);
+            backdrop-filter: blur(12px);
+            padding: 24px;
+        }
+        .modal-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 440px;
+            width: 100%;
+        }
+        .sub-title {
+            font-family: var(--font-cinzel);
+            font-size: 0.8rem;
+            letter-spacing: 3px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+            font-weight: 800;
+        }
+        .main-title {
+            font-family: var(--font-cinzel);
+            font-size: 2.8rem;
+            font-weight: 900;
+            line-height: 1.1;
+            color: #f8fafc;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+            text-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
+        }
+        .gold-text {
+            color: var(--loki-gold);
+            text-shadow: 0 0 25px rgba(251, 191, 36, 0.6);
+        }
+        .fail-title { color: #ef4444; text-shadow: 0 0 30px rgba(239, 68, 68, 0.7); }
+        .win-title { color: #4ade80; text-shadow: 0 0 40px rgba(74, 222, 128, 0.8); }
+        .desc {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: #cbd5e1;
+            margin-bottom: 24px;
+        }
+        .meme-mode-box {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(74, 222, 128, 0.25);
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+        }
+        .meme-mode-box label {
+            font-size: 0.85rem;
+            color: #86efac;
+            font-weight: 600;
+        }
+        .meme-mode-box select {
+            width: 100%;
+            background: #061810;
+            color: #f8fafc;
+            border: 1px solid #10b981;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-family: var(--font-kanit);
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .cta-button {
+            padding: 16px 36px;
+            font-family: var(--font-kanit);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #022c22;
+            background: linear-gradient(135deg, #4ade80 0%, #10b981 100%);
+            border: none;
+            border-radius: 9999px;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(34, 197, 94, 0.6);
+            touch-action: manipulation;
+        }
+        .cta-button:active {
+            transform: scale(0.96);
+        }
+        .fail-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            color: #fff;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
+        }
+        .win-btn {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            color: #451a03;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+
+        <header id="hud" class="hidden">
+            <div class="hud-top">
+                <div class="title-badge">
+                    <span>👑</span>
+                    <span class="badge-text">GOD OF STORIES</span>
+                </div>
+                <div class="song-badge">
+                    <span>🎵</span>
+                    <span>Sia - Snowman</span>
+                </div>
+            </div>
+            <div class="progress-section">
+                <div class="progress-labels">
+                    <span>ก้าวสู่บัลลังก์แห่งกาลเวลา</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="progress-bar-fill"></div>
+                </div>
+            </div>
+            <div class="health-section">
+                <div class="health-labels">
+                    <span>เสถียรภาพมัลติเวิร์ส (อย่าให้แตกสลาย)</span>
+                    <span id="health-percent">100%</span>
+                </div>
+                <div class="health-bar-bg">
+                    <div id="health-bar-fill"></div>
+                </div>
+            </div>
+        </header>
+
+        <div id="controls-hint" class="hidden">
+            <span>👆</span> ปัดหน้าจอขึ้นเพื่อก้าวเดิน & แตะเส้นเวลาที่ซีดจางเพื่อส่งพลังเวทย์!
+        </div>
+
+        <section id="screen-start" class="screen-modal">
+            <div class="modal-content">
+                <h2 class="sub-title">MARVEL STUDIOS MEME PRESENTS</h2>
+                <h1 class="main-title">LOKI<br><span class="gold-text">YGGDRASIL</span></h1>
+                <p class="desc">
+                    <i>"I want you to know that I'm never leaving..."</i><br><br>
+                    รับบทเป็นโลกิ <b>"เดอะแบกแห่งพหุภพ"</b><br>
+                    รวบรวมเส้นเวลาที่กำลังจะสลายเป็นขี้เถ้า ลากขึ้นสู่บัลลังก์เพื่อถักทอเป็นต้นไม้อิกดราซิล
+                </p>
+                <div class="meme-mode-box">
+                    <label>🎭 ธีมของสิ่งที่คุณกำลังแบก:</label>
+                    <select id="meme-mode-select">
+                        <option value="daily">ชีวิตจริง (การนอน, สุขภาพ, หนี้สิน, ความหวัง)</option>
+                        <option value="work">คนทำงาน (Legacy Code, Deadline, บอส, ลูกค้า)</option>
+                        <option value="student">เด็กมหาลัย (โปรเจกต์กลุ่ม, สอบไฟนอล, งานเดี่ยว)</option>
+                        <option value="marvel">Marvel Lore (Earth-616, Kang, TVA, Sacred Timeline)</option>
+                    </select>
+                </div>
+                <button id="btn-start" class="cta-button">
+                    <span>⚡ เริ่มกอบกู้เส้นเวลา (เปิดเสียง 🎵)</span>
+                </button>
+            </div>
+        </section>
+
+        <section id="screen-gameover" class="screen-modal hidden">
+            <div class="modal-content">
+                <h1 class="main-title fail-title">มัลติเวิร์สล่มสลาย</h1>
+                <p class="desc">เส้นเวลาขาดสะบั้นกลายเป็นเส้นสปาเก็ตตี้หมดแล้ว...<br>คุณประคองทุกอย่างไว้คนเดียวไม่ไหว</p>
+                <button id="btn-retry" class="cta-button fail-btn">🔄 ลองแบกใหม่อีกครั้ง</button>
+            </div>
+        </section>
+
+        <section id="screen-victory" class="screen-modal hidden">
+            <div class="modal-content">
+                <h2 class="sub-title gold-text">FOR YOU. FOR ALL OF US.</h2>
+                <h1 class="main-title win-title">GOD OF STORIES</h1>
+                <p class="desc">คุณเดินมาถึงบัลลังก์สำเร็จ!<br>เส้นเวลาทั้งหมดเบ่งบานเป็น <b>ต้นไม้อิกดราซิลสีเขียวมรกต</b><br>คุณได้กลายเป็นผู้พิทักษ์มัลติเวิร์สชั่วนิรันดร์</p>
+                <button id="btn-restart" class="cta-button win-btn">👑 นั่งบนบัลลังก์ต่อไป (เล่นรอบใหม่)</button>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // --- 1. Sound Engine (Snowman Melody Synthesizer) ---
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.isPlaying = false;
+                this.stepTimer = null;
+                this.currentStep = 0;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+                if (this.ctx.state === 'suspended') this.ctx.resume();
+            }
+            play() {
+                this.init();
+                this.isPlaying = true;
+                this.startProceduralSnowman();
+            }
+            stop() {
+                this.isPlaying = false;
+                if (this.stepTimer) clearTimeout(this.stepTimer);
+            }
+            startProceduralSnowman() {
+                if (!this.isPlaying) return;
+                const melody = [
+                    { note: 261.63, dur: 0.4 }, { note: 329.63, dur: 0.4 }, { note: 392.00, dur: 0.6 },
+                    { note: 349.23, dur: 0.4 }, { note: 329.63, dur: 0.6 }, { note: 293.66, dur: 0.6 },
+                    { note: 261.63, dur: 0.4 }, { note: 293.66, dur: 0.4 }, { note: 329.63, dur: 0.6 },
+                    { note: 293.66, dur: 0.4 }, { note: 261.63, dur: 0.8 },
+                    // Peak: I want you to know that I'm never leaving...
+                    { note: 261.63, dur: 0.3 }, { note: 329.63, dur: 0.3 }, { note: 392.00, dur: 0.4 },
+                    { note: 523.25, dur: 0.6 }, { note: 493.88, dur: 0.4 }, { note: 440.00, dur: 0.4 }, { note: 392.00, dur: 0.8 },
+                    { note: 349.23, dur: 0.4 }, { note: 392.00, dur: 0.4 }, { note: 440.00, dur: 0.5 },
+                    { note: 392.00, dur: 0.4 }, { note: 349.23, dur: 0.4 }, { note: 329.63, dur: 0.8 }
+                ];
+                const chords = [
+                    [130.81, 164.81, 196.00], [174.61, 220.00, 261.63],
+                    [146.83, 174.61, 220.00], [196.00, 246.94, 293.66]
+                ];
+                this.currentStep = 0;
+                const tick = () => {
+                    if (!this.isPlaying) return;
+                    const item = melody[this.currentStep % melody.length];
+                    this.playBell(item.note, item.dur * 1.2);
+                    if (this.currentStep % 4 === 0) {
+                        const chordIdx = Math.floor(this.currentStep / 4) % chords.length;
+                        this.playPadChord(chords[chordIdx], 2.2);
+                    }
+                    this.currentStep++;
+                    this.stepTimer = setTimeout(tick, item.dur * 750);
+                };
+                tick();
+            }
+            playBell(freq, duration) {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.exponentialRampToValueAtTime(0.18, now + 0.04);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + duration);
+            }
+            playPadChord(freqs, duration) {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                freqs.forEach(f => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    const filter = this.ctx.createBiquadFilter();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(f, now);
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(450, now);
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.linearRampToValueAtTime(0.04, now + 0.5);
+                    gain.gain.linearRampToValueAtTime(0.0001, now + duration);
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + duration);
+                });
+            }
+            playHealFX() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.35);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            }
+            playStepFX() {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(80, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            }
+        }
+        const soundEngine = new SoundEngine();
+
+        // --- 2. Physics & Branches ---
+        class TimelineSegment {
+            constructor(x, y) { this.x = x; this.y = y; this.oldX = x; this.oldY = y; }
+        }
+        class TimelineBranch {
+            constructor(startX, startY, endX, endY, labelText, isMain = false) {
+                this.isMain = isMain;
+                this.label = labelText;
+                this.segments = [];
+                this.numSegments = isMain ? 12 : 8;
+                this.length = isMain ? 240 : 160;
+                this.segLength = this.length / this.numSegments;
+                this.health = 100;
+                this.decayRate = 3.5 + Math.random() * 4;
+                this.energyPulses = [{ pos: Math.random(), speed: 0.008 + Math.random() * 0.006 }];
+                for (let i = 0; i < this.numSegments; i++) {
+                    const t = i / (this.numSegments - 1);
+                    this.segments.push(new TimelineSegment(startX + (endX - startX) * t, startY + (endY - startY) * t));
+                }
+            }
+            update(lokiHandX, lokiHandY, dt, windStrength) {
+                this.segments[0].x = lokiHandX;
+                this.segments[0].y = lokiHandY;
+                if (!this.isMain) {
+                    this.health -= this.decayRate * dt;
+                }
+                for (let i = 1; i < this.numSegments; i++) {
+                    const seg = this.segments[i];
+                    const vx = (seg.x - seg.oldX) * 0.92;
+                    const vy = (seg.y - seg.oldY) * 0.92;
+                    seg.oldX = seg.x;
+                    seg.oldY = seg.y;
+                    const sway = Math.sin(Date.now() * 0.002 + i * 0.5) * 1.5;
+                    seg.x += vx + windStrength + sway;
+                    seg.y += vy + 0.8;
+                }
+                for (let iter = 0; iter < 4; iter++) {
+                    for (let i = 0; i < this.numSegments - 1; i++) {
+                        const s1 = this.segments[i], s2 = this.segments[i + 1];
+                        const dx = s2.x - s1.x, dy = s2.y - s1.y;
+                        const dist = Math.hypot(dx, dy) || 1;
+                        const diff = (this.segLength - dist) / dist;
+                        const offX = dx * diff * 0.5, offY = dy * diff * 0.5;
+                        if (i !== 0) { s1.x -= offX; s1.y -= offY; }
+                        s2.x += offX; s2.y += offY;
+                    }
+                }
+                this.energyPulses.forEach(p => p.pos = (p.pos + p.speed) % 1);
+            }
+            heal() {
+                this.health = Math.min(100, this.health + 45);
+                this.energyPulses.push({ pos: 0, speed: 0.025 });
+                if (this.energyPulses.length > 4) this.energyPulses.shift();
+            }
+            draw(ctx) {
+                if (this.segments.length < 2) return;
+                ctx.save();
+                ctx.beginPath();
+                ctx.moveTo(this.segments[0].x, this.segments[0].y);
+                for (let i = 1; i < this.numSegments - 1; i++) {
+                    const xc = (this.segments[i].x + this.segments[i + 1].x) / 2;
+                    const yc = (this.segments[i].y + this.segments[i + 1].y) / 2;
+                    ctx.quadraticCurveTo(this.segments[i].x, this.segments[i].y, xc, yc);
+                }
+                const last = this.segments[this.numSegments - 1];
+                ctx.lineTo(last.x, last.y);
+                let strokeColor, glowColor;
+                if (this.health > 50) {
+                    strokeColor = '#22c55e'; glowColor = '#4ade80'; ctx.lineWidth = this.isMain ? 7 : 4;
+                } else if (this.health > 25) {
+                    strokeColor = '#eab308'; glowColor = '#facc15'; ctx.lineWidth = this.isMain ? 6 : 3.5;
+                } else {
+                    strokeColor = '#ef4444'; glowColor = '#f87171'; ctx.lineWidth = 2.5;
+                }
+                ctx.strokeStyle = strokeColor;
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = this.health > 40 ? 18 : 6;
+                ctx.stroke();
+
+                // Pulses
+                this.energyPulses.forEach(p => {
+                    const segIdx = Math.floor(p.pos * (this.numSegments - 1));
+                    const nextIdx = Math.min(this.numSegments - 1, segIdx + 1);
+                    const subT = (p.pos * (this.numSegments - 1)) - segIdx;
+                    const px = this.segments[segIdx].x + (this.segments[nextIdx].x - this.segments[segIdx].x) * subT;
+                    const py = this.segments[segIdx].y + (this.segments[nextIdx].y - this.segments[segIdx].y) * subT;
+                    ctx.beginPath();
+                    ctx.arc(px, py, this.health > 40 ? 5 : 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowColor = '#86efac';
+                    ctx.shadowBlur = 15;
+                    ctx.fill();
+                });
+
+                // Meme label
+                if (this.label) {
+                    const mid = this.segments[Math.floor(this.numSegments * 0.6)];
+                    ctx.font = '12px "Kanit", sans-serif';
+                    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                    const textWidth = ctx.measureText(this.label).width;
+                    ctx.fillStyle = 'rgba(6, 24, 16, 0.85)';
+                    ctx.strokeStyle = glowColor;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.roundRect(mid.x - (textWidth+16)/2, mid.y - 11, textWidth + 16, 22, 6);
+                    ctx.fill(); ctx.stroke();
+                    ctx.fillStyle = this.health > 35 ? '#dcfce7' : '#fca5a5';
+                    ctx.shadowBlur = 0;
+                    ctx.fillText(this.label, mid.x, mid.y);
+                }
+
+                // Touch indicator
+                if (this.health <= 50) {
+                    ctx.beginPath();
+                    ctx.arc(last.x, last.y, 22, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 2;
+                    ctx.stroke(); ctx.fill();
+                    ctx.font = '14px sans-serif';
+                    ctx.fillText('⚡', last.x - 6, last.y + 5);
+                }
+                ctx.restore();
+            }
+        }
+
+        // --- 3. Loki & Throne ---
+        class LokiCharacter {
+            constructor() {
+                this.x = 0; this.y = 0; this.stepPhase = 0; this.strideSpeed = 0;
+                this.handX = 0; this.handY = 0; this.auraPulse = 0;
+            }
+            update(centerX, centerY, isMoving, dt) {
+                this.x = centerX; this.y = centerY;
+                if (isMoving) {
+                    this.stepPhase += dt * 6;
+                    this.strideSpeed = Math.min(1, this.strideSpeed + dt * 3);
+                } else {
+                    this.strideSpeed = Math.max(0, this.strideSpeed - dt * 2);
+                }
+                const bob = Math.sin(this.stepPhase) * 4 * this.strideSpeed;
+                this.handX = this.x; this.handY = this.y + 10 + bob;
+                this.auraPulse = (this.auraPulse + dt * 3) % (Math.PI * 2);
+            }
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                const bob = Math.sin(this.stepPhase) * 4 * this.strideSpeed;
+                ctx.rotate(-0.15);
+
+                // Aura
+                const auraSize = 45 + Math.sin(this.auraPulse) * 8;
+                const grad = ctx.createRadialGradient(0, 0, 10, 0, 0, auraSize);
+                grad.addColorStop(0, 'rgba(34, 197, 94, 0.45)');
+                grad.addColorStop(1, 'rgba(3, 10, 7, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(0, -10 + bob, auraSize, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Cloak
+                ctx.beginPath();
+                ctx.moveTo(-14, -15 + bob);
+                const wind = Math.sin(Date.now() * 0.006) * 12;
+                ctx.quadraticCurveTo(-35, 30 + bob, -20 + wind, 65 + bob);
+                ctx.lineTo(20 + wind, 65 + bob);
+                ctx.quadraticCurveTo(35, 30 + bob, 14, -15 + bob);
+                ctx.closePath();
+                ctx.fillStyle = '#062817'; ctx.strokeStyle = '#10b981'; ctx.lineWidth = 1.5;
+                ctx.stroke(); ctx.fill();
+
+                // Boots
+                const lLeg = Math.sin(this.stepPhase) * 14 * this.strideSpeed;
+                const rLeg = -Math.sin(this.stepPhase) * 14 * this.strideSpeed;
+                ctx.fillStyle = '#1e293b'; ctx.fillRect(-12, 22 + lLeg + bob, 8, 22);
+                ctx.fillStyle = '#0f172a'; ctx.fillRect(4, 22 + rLeg + bob, 8, 22);
+
+                // Coat
+                ctx.beginPath(); ctx.roundRect(-16, -24 + bob, 32, 48, 8);
+                ctx.fillStyle = '#1e3a29'; ctx.fill();
+                ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(0, -22 + bob); ctx.lineTo(0, 4 + bob); ctx.stroke();
+
+                // Head
+                ctx.beginPath(); ctx.arc(0, -38 + bob, 14, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffe4cf'; ctx.fill();
+                ctx.beginPath(); ctx.arc(0, -42 + bob, 16, Math.PI * 0.8, Math.PI * 2.2);
+                ctx.fillStyle = '#0f172a'; ctx.fill();
+
+                // Eyes
+                ctx.fillStyle = '#4ade80'; ctx.fillRect(-6, -39 + bob, 3, 2); ctx.fillRect(3, -39 + bob, 3, 2);
+
+                // Golden Horns
+                ctx.strokeStyle = '#fbbf24'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 15; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(-10, -46 + bob); ctx.bezierCurveTo(-26, -60 + bob, -36, -45 + bob, -42, -72 + bob); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(10, -46 + bob); ctx.bezierCurveTo(26, -60 + bob, 36, -45 + bob, 42, -72 + bob); ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Hands
+                ctx.fillStyle = '#22c55e'; ctx.shadowColor = '#4ade80'; ctx.shadowBlur = 15;
+                ctx.beginPath(); ctx.arc(-14, 12 + bob, 7, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(14, 12 + bob, 7, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
+            }
+            drawThrone(ctx, width, height, progressRatio) {
+                ctx.save();
+                const throneY = height * 0.16 + (progressRatio * 15);
+                const scale = 0.7 + progressRatio * 0.5;
+                ctx.translate(width / 2, throneY);
+                ctx.scale(scale, scale);
+                ctx.fillStyle = '#fbbf24'; ctx.shadowColor = '#f59e0b'; ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.moveTo(-25, 20); ctx.lineTo(-30, -50); ctx.lineTo(0, -75); ctx.lineTo(30, -50); ctx.lineTo(25, 20);
+                ctx.closePath(); ctx.fill();
+                ctx.fillStyle = '#d97706'; ctx.fillRect(-35, 20, 70, 16);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)'; ctx.strokeStyle = '#475569';
+                for (let i = 1; i <= 4; i++) {
+                    const stepW = 80 + i * 35;
+                    ctx.fillRect(-stepW / 2, 36 + (i - 1) * 14, stepW, 14);
+                    ctx.strokeRect(-stepW / 2, 36 + (i - 1) * 14, stepW, 14);
+                }
+                ctx.restore();
+            }
+        }
+
+        // --- 4. Main Game Execution ---
+        const MEME_PRESETS = {
+            daily: ["การนอน 8 ชม.", "เงินในบัญชี", "สุขภาพจิต", "ความฝัน", "เวลาว่าง", "ความหวัง"],
+            work: ["Legacy Code", "Deadline พรุ่งนี้", "แก้งานรอบที่ 8", "ลูกค้าเปลี่ยนใจ", "Production DB", "เดอะแบกของทีม"],
+            student: ["โปรเจกต์กลุ่ม", "สอบไฟนอล", "สไลด์รายงาน", "เพื่อนหายไปไหน", "เกรดเฉลี่ย", "อาจารย์สั่งงานเพิ่ม"],
+            marvel: ["Sacred Timeline", "Earth-616", "Kang", "Sylvie", "Mobius Jet-Ski", "Temporal Loom"]
+        };
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const loki = new LokiCharacter();
+        let width = 0, height = 0;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let state = 'START', progress = 0, health = 100, branches = [], isMoving = false, stepCooldown = 0, lastTime = 0;
+        const hud = document.getElementById('hud'), progressBar = document.getElementById('progress-bar-fill');
+        const progressPercent = document.getElementById('progress-percent'), healthBar = document.getElementById('health-bar-fill');
+        const healthPercent = document.getElementById('health-percent'), hint = document.getElementById('controls-hint');
+        const screenStart = document.getElementById('screen-start'), screenGameOver = document.getElementById('screen-gameover');
+        const screenVictory = document.getElementById('screen-victory'), memeSelect = document.getElementById('meme-mode-select');
+
+        function start() {
+            screenStart.classList.add('hidden'); screenGameOver.classList.add('hidden'); screenVictory.classList.add('hidden');
+            hud.classList.remove('hidden'); hint.classList.remove('hidden');
+            state = 'PLAY'; progress = 0; health = 100; branches = [];
+            const labels = MEME_PRESETS[memeSelect.value] || MEME_PRESETS.daily;
+            const lx = width / 2, ly = height * 0.62;
+            branches.push(new TimelineBranch(lx, ly, lx, height + 60, "เดอะแบกแห่งพหุภพ", true));
+            labels.forEach((l, idx) => {
+                const angle = (idx / (labels.length - 1) - 0.5) * 1.5;
+                branches.push(new TimelineBranch(lx, ly, lx + Math.sin(angle) * (width * 0.45), height + 40 + Math.cos(angle) * 30, l, false));
+            });
+            soundEngine.play();
+        }
+
+        document.getElementById('btn-start').onclick = start;
+        document.getElementById('btn-retry').onclick = start;
+        document.getElementById('btn-restart').onclick = start;
+
+        function step() {
+            isMoving = true; stepCooldown = 0.35;
+            progress = Math.min(100, progress + 2.5);
+            soundEngine.playStepFX();
+            if (progress >= 100) {
+                state = 'VICTORY';
+                hint.classList.add('hidden');
+                screenVictory.classList.remove('hidden');
+            }
+        }
+
+        let touchY = 0, touching = false;
+        canvas.addEventListener('pointerdown', e => {
+            if (state !== 'PLAY') return;
+            touchY = e.clientY; touching = true;
+            let healed = false;
+            branches.forEach(b => {
+                if (b.health <= 50) {
+                    const last = b.segments[b.segments.length - 1];
+                    if (Math.hypot(last.x - e.clientX, last.y - e.clientY) < 45) {
+                        b.heal(); soundEngine.playHealFX();
+                        health = Math.min(100, health + 8); healed = true;
+                    }
+                }
+            });
+            if (!healed) step();
+        });
+        canvas.addEventListener('pointermove', e => {
+            if (!touching || state !== 'PLAY') return;
+            if (touchY - e.clientY > 25) { step(); touchY = e.clientY; }
+        });
+        window.addEventListener('pointerup', () => touching = false);
+        window.addEventListener('keydown', e => { if (state === 'PLAY' && (e.code === 'Space' || e.code === 'ArrowUp')) step(); });
+
+        function loop(timestamp) {
+            requestAnimationFrame(loop);
+            const dt = Math.min(0.08, (timestamp - lastTime) / 1000 || 0.016);
+            lastTime = timestamp;
+            if (stepCooldown > 0) {
+                stepCooldown -= dt;
+                if (stepCooldown <= 0) isMoving = false;
+            }
+            ctx.fillStyle = '#020805'; ctx.fillRect(0, 0, width, height);
+
+            const lx = width / 2, ly = height * 0.62;
+            loki.drawThrone(ctx, width, height, progress / 100);
+
+            if (state === 'PLAY') {
+                let dying = 0;
+                branches.forEach(b => {
+                    b.update(loki.handX, loki.handY, dt, Math.sin(timestamp * 0.003) * 0.8);
+                    if (b.health <= 25) dying++;
+                });
+                health -= (dt * 1.5) + (dying * dt * 3.5);
+                if (health <= 0) {
+                    health = 0; state = 'GAMEOVER';
+                    hint.classList.add('hidden'); screenGameOver.classList.remove('hidden');
+                    soundEngine.stop();
+                }
+                progressBar.style.width = progress + '%';
+                progressPercent.innerText = Math.floor(progress) + '%';
+                healthBar.style.width = Math.max(0, health) + '%';
+                healthPercent.innerText = Math.floor(health) + '%';
+            }
+
+            branches.forEach(b => b.draw(ctx));
+            loki.update(lx, ly, isMoving, dt);
+            loki.draw(ctx);
+
+            if (state === 'VICTORY') {
+                ctx.save();
+                ctx.strokeStyle = '#4ade80'; ctx.shadowColor = '#86efac'; ctx.shadowBlur = 25; ctx.lineWidth = 3;
+                const rx = width / 2, ry = height * 0.22;
+                for (let i = 0; i < 14; i++) {
+                    const angle = (i / 13) * Math.PI - Math.PI;
+                    const len = 120 + Math.sin(timestamp * 0.002 + i) * 20;
+                    ctx.beginPath(); ctx.moveTo(rx, ry);
+                    ctx.quadraticCurveTo(rx + Math.cos(angle+0.3)*len*0.6, ry + Math.sin(angle+0.3)*len*0.6, rx + Math.cos(angle)*len, ry + Math.sin(angle)*len);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>
